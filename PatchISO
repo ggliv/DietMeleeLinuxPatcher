@@ -1,0 +1,82 @@
+#!/usr/bin/env bash
+
+# Hey you! If you're reading this, you'd probably be helpful with testing/writing this script.
+# Join the Discord linked below and ask about helping with the Linux patcher if you're interested.
+
+version="1.0.2"
+file="${1#file://}"
+file="${file//%20/ }"
+tmpdir="$(dirname "$(mktemp -u)")"
+pfx="\033[0;36m::\033[0m"
+
+if test -z "$file"; then
+	printf "$pfx Absolute path to your ISO (use tab completion): "
+	read -e file
+fi
+if command -v "xdelta3" > /dev/null 2>&1; then
+	xdeltapath="$(printf %q "$(command -v "xdelta3")")"
+else
+	xdeltapath="./blob/xdelta/xdelta3"
+fi
+
+cont () {
+	printf "$pfx Press any key to continue..."
+	read -n 1 -s -r -e
+	exit 0
+}
+
+error () {
+	printf "\n";
+	printf "$pfx We hit an error. Make sure you used the right file, then try again.\n"
+	printf "$pfx If you keep getting this message, try running xdelta3 or the PatchISO script manually.\n"
+	printf "$pfx If you are really stuck, post a screenshot of this window to #i-need-help in our community Discord.\n"
+	printf "$pfx Invite link: https://discord.gg/PwpcPtkRwU\n\n"
+	cont
+}
+
+input () {
+	printf "$pfx Patch for [C]lassic, C[r]ystal, or [6]4?: "
+	read -r dmtype
+	dmtype="$(echo "$dmtype" | tr '[:upper:]' '[:lower:]')"
+	case $dmtype in
+		c)
+			patch="./blob/patches/DietMeleeClassic.xdelta"
+			outputname="DietMeleeClassic_v$version.iso"
+			;;
+		r)
+			patch="$tmpdir/tempdmpatch.xdelta"
+			$xdeltapath -d -f -s "./blob/patches/DietMeleeClassic.xdelta" "./blob/patches/crystaldiff.xdelta" "$patch" || error
+			outputname="CrystalMelee_v$version.iso"
+			;;
+		6)
+			patch="$tmpdir/tempdmpatch.xdelta"
+			$xdeltapath -d -f -s "./blob/patches/DietMeleeClassic.xdelta" "./blob/patches/64diff.xdelta" "$patch" || error
+			outputname="DietMelee64_v$version.iso"
+			;;
+		*)
+			printf "$pfx Invalid input. Make sure you entered C, R, or 6.\n\n"
+			input
+			;;
+	esac
+}
+
+printf "\033[0;90m _____  _      _    \033[0;31m __  __      _           \n"
+printf "\033[0;90mI  __ \(_)    I I   \033[0;31mI  \/  I    I I          \n"
+printf "\033[0;90mI I  I I_  ___I I_  \033[0;31mI \  / I ___I I ___  ___ \n"
+printf "\033[0;90mI I  I I I/ _ \ __I \033[0;31mI I\/I I/ _ \ I/ _ \/ _ \\\\\n"
+printf "\033[0;90mI I__I I I  __/ I_  \033[0;31mI I  I I  __/ I  __/  __/\n"
+printf "\033[0;90mI_____/I_I\___I\__I \033[0;31mI_I  I_I\___I_I\___I\___I\033[0m Ver. %s\n\n" "$version"
+
+printf "$pfx Let's get started on making your Diet Melee ISO... this shouldn't take long.\n\n"
+
+input
+
+$xdeltapath -d -f -s "$file" "$patch" "$outputname" || error
+
+printf "$pfx All done! Your patched image is located at $(pwd)/%s\n\n" "$outputname"
+
+if [ "$patch" != "./blob/patches/DietMeleeClassic.xdelta" ]; then
+	rm "$patch" > /dev/null 2>&1
+fi
+
+cont

@@ -1,0 +1,6 @@
+[Desktop Entry]
+Name=Drag Your Melee ISO Here
+# Oh how I wish %k was actually standardized. If you know how to do this better then please join the Discord and lend me a hand.
+Exec=bash -c "cd \"$(echo %k | sed 's/Drag Your Melee ISO Onto This Icon.desktop//')\" && bash ./PatchISO %U"
+Type=Application
+Terminal=true
