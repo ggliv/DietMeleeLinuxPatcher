@@ -12,7 +12,7 @@ To use this script you will need to have a bash interpreter and coreutils instal
 
 The vanilla Melee ISO used must have an md5 sum of `0e63d4223b01d9aba596259dc155a174`, otherwise xdelta will refuse to patch.
 
-If you are running on an architecture other than amd64 (or if your distribution ), you will need to manually install the `xdelta3` package from your distro's repositories.
+If you are running on an architecture other than amd64 (or if your distribution doesn't like running executables not built for your system), you will need to manually install the `xdelta3` package from your distro's repositories.
 The bundled binary is dynamically linked and built for amd64, but this script can look for a local install of xdelta3 in your $PATH.
 
 If you can't just drag and drop for some reason, you'll have to manually run the patcher script.
